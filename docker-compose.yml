@@ -7,20 +7,125 @@ services:
       - .:/app
     ports:
       - "8000:8000"
-    depends_on:
-      - pgdb
+    
   pgdb:
     image: postgres
-    container_name: postgres
+    container_name: pgdb
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
 
-  esearch:
-    image: elasticsearch:8.13.0
-    container_name: search
-    environment:
-      - discovery.type=single-node
+
+  es01:
+    image: elasticsearch:7.17.20
+    container_name: node1
     ports:
       - "9200:9200"
+      - "9300:9300"
+    environment:
+      node.name: es01
+      discovery.seed_hosts: es01,es02,es03
+      cluster.initial_master_nodes: es01,es02,es03
+      cluster.name: mycluster
+      bootstrap.memory_lock: "true"
+      ES_JAVA_OPTS: -Xms256m -Xmx256m
+    volumes:
+      - "es-data-es01:/usr/share/elasticsearch/data"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://localhost:9200"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    networks:
+      - elastic
+  es02:
+    image: elasticsearch:7.17.20
+    container_name: node2
+    ports:
+      - "9201:9200"
+      - "9301:9300"
+    environment:
+      node.name: es02
+      discovery.seed_hosts: es01,es02,es03
+      cluster.initial_master_nodes: es01,es02,es03
+      cluster.name: mycluster
+      bootstrap.memory_lock: "true"
+      ES_JAVA_OPTS: -Xms256m -Xmx256m
+    volumes:
+      - "es-data-es02:/usr/share/elasticsearch/data"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://localhost:9200"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    networks:
+      - elastic
+  es03:
+    image: elasticsearch:7.17.20
+    container_name: node3
+    ports:
+      - "9202:9200"
+      - "9303:9300"
+    environment:
+      node.name: es03
+      discovery.seed_hosts: es01,es02,es03
+      cluster.initial_master_nodes: es01,es02,es03
+      cluster.name: mycluster
+      bootstrap.memory_lock: "true"
+      ES_JAVA_OPTS: -Xms256m -Xmx256m
+    volumes:
+      - "es-data-es03:/usr/share/elasticsearch/data"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://localhost:9200"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    networks:
+      - elastic
+  kibana:
+    image: kibana:7.17.20
+    container_name: kibana
+    depends_on:
+      es01:
+        condition: service_healthy
+      es02:
+        condition: service_healthy
+      es03:
+        condition: service_healthy
+    ports:
+      - "5601:5601"
+    environment:
+      - 'ELASTICSEARCH_HOSTS=["http://es01:9200","http://es02:9200","http://es03:9200"]'
+    networks:
+      - elastic
+    
+  logstash:
+    image: logstash:7.17.20
+    container_name: logstash
+    ports:
+      - '5000:5000'
+    volumes:
+      - ./logstash/:/logstash_dir
+    networks:
+      - elastic
+volumes:
+  es-data-es01:
+  es-data-es02:
+  es-data-es03:
+
+networks:
+  elastic:
+    driver: bridge
