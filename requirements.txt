@@ -1,5 +1,9 @@
 Django
 psycopg2-binary>=2.8
-elasticsearch-dsl==0.0.2
+elasticsearch-dsl
 django-rest-swagger
 djangorestframework
+requests
+elasticsearch_dsl
+django_elasticsearch_dsl
+django_elasticsearch_dsl_drf

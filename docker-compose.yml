@@ -2,7 +2,7 @@ services:
   django:
     build: .
     container_name: django
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python manage.py runserver [::]:8000
     volumes:
       - .:/app
     ports:
@@ -15,7 +15,10 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-
+    volumes:
+      - "pgdata:/usr/share/pgdata/data"
+    ports:
+      - "5432:5432"
 
   es01:
     image: elasticsearch:7.17.20
@@ -125,6 +128,7 @@ volumes:
   es-data-es01:
   es-data-es02:
   es-data-es03:
+  pgdata:
 
 networks:
   elastic:
