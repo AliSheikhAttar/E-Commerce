@@ -1,13 +1,12 @@
 services:
   django:
     build: .
-    container_name: django
+    image: django
     command: python manage.py runserver [::]:8000
     volumes:
       - .:/app
     ports:
       - "8000:8000"
-    
   pgdb:
     image: postgres
     container_name: pgdb

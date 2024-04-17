@@ -3,5 +3,5 @@ from django.shortcuts import render, HttpResponse
 
 
 def helloworld(request):
-    # return render(request, 'index.html')
-    return HttpResponse("Hello")
+    return render(request, 'index.html')
+    # return HttpResponse("Hello")

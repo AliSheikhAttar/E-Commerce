@@ -1,0 +1,10 @@
+{% extends "index.html" %} {% block content %}
+<h1> EXTENDED </h1>
+<ul>
+    {% for item in items %}
+    <li>
+        {{% item.name %}}: {% if item.state %} Done {% else %}not Done{% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
